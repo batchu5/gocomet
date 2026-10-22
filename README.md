@@ -92,7 +92,7 @@ sequenceDiagram
     participant O as Other viewers
 
     S->>API: POST /api/rfqs/{id}/bids
-    API->>DB: BEGIN; SELECT rfq FOR UPDATE
+    API->>DB: BEGIN + SELECT rfq FOR UPDATE
     Note over API: now = clock() (after lock)<br/>reject if before start / after current close
     API->>DB: load bids → ranking BEFORE
     Note over API: reject if not lower than<br/>supplier's own previous bid
@@ -102,7 +102,7 @@ sequenceDiagram
         Note over API: new_close = min(current_close + Y, forced_close)
         API->>DB: UPDATE rfq.current_close_at, INSERT EXTENDED event (with reason)
     end
-    API->>DB: INSERT BID_PLACED event; COMMIT
+    API->>DB: INSERT BID_PLACED event, COMMIT
     API-->>S: 201 bid
     API-->>O: WS rfq_updated
 ```
